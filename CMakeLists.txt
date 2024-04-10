@@ -210,7 +210,7 @@ elseif((NOT CYGWIN AND NOT MINGW AND NOT MSYS) AND (USING_GCC OR USING_CLANG))
 endif()
 
 if(USING_GCC OR USING_CLANG)
-  jerry_add_compile_flags(-std=c99 -pedantic)
+  jerry_add_compile_flags(-std=gnu99 -pedantic)
   if(JERRY_MATH)
     jerry_add_compile_flags(-fno-builtin)
   endif()
