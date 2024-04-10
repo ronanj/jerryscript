@@ -127,7 +127,7 @@
   #if defined(__SSE2__) || \
       (CWISS_IS_MSVCISH && \
        (defined(_M_X64) || (defined(_M_IX86) && _M_IX86_FP >= 2)))
-    #define CWISS_HAVE_SSE2 1
+    #define CWISS_HAVE_SSE2 0
   #else
     #define CWISS_HAVE_SSE2 0
   #endif
@@ -307,7 +307,7 @@ CWISS_BEGIN_EXTERN
 /// Counts the number of trailing zeroes in the binary representation of `x`.
 CWISS_INLINE_ALWAYS
 static inline uint32_t CWISS_TrailingZeroes64(uint64_t x) {
-#if 0 && CWISS_HAVE_CLANG_BUILTIN(__builtin_ctzll) || CWISS_IS_GCC
+#if 0 && (CWISS_HAVE_CLANG_BUILTIN(__builtin_ctzll) || CWISS_IS_GCC)
   static_assert(sizeof(unsigned long long) == sizeof(x),
                 "__builtin_ctzll does not take 64-bit arg");
   return __builtin_ctzll(x);
@@ -339,7 +339,7 @@ static inline uint32_t CWISS_TrailingZeroes64(uint64_t x) {
 /// Counts the number of leading zeroes in the binary representation of `x`.
 CWISS_INLINE_ALWAYS
 static inline uint32_t CWISS_LeadingZeroes64(uint64_t x) {
-#if  0 && CWISS_HAVE_CLANG_BUILTIN(__builtin_clzll) || CWISS_IS_GCC
+#if  0 && (CWISS_HAVE_CLANG_BUILTIN(__builtin_clzll) || CWISS_IS_GCC)
   static_assert(sizeof(unsigned long long) == sizeof(x),
                 "__builtin_clzll does not take 64-bit arg");
   // Handle 0 as a special case because __builtin_clzll(0) is undefined.
