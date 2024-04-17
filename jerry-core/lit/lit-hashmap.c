@@ -23,56 +23,54 @@
 
 #include "ecma-globals.h"
 
-#include "lit-hashmap-swisstable.h"
-#include "lit-hashmap.h"
+#if JERRY_LIT_HASHMAP
 
-/* Type definition: Typename, type:key, type:value */
-CWISS_DECLARE_NODE_HASHMAP (LitHashMap, uint32_t, const ecma_string_t *);
+#include "lit-hashmap.h"
+#include "lit-hashmap-impl.h"
 
 struct hashmap_s
 {
-  LitHashMap map;
+  hashmap_impl map;
 };
 
 void
 hashmap_init (hashmap_t *map)
 {
-  hashmap_t hashmap_on_the_heap = (struct hashmap_s *) malloc (sizeof (struct hashmap_s));
-  LitHashMap hashmap_on_the_stack = LitHashMap_new (8);
-  hashmap_on_the_heap->map = hashmap_on_the_stack;
-  *map = hashmap_on_the_heap;
-}
+  struct hashmap_s* hashmap = jmem_heap_alloc_block(sizeof(struct hashmap_s));
+  hashmap_impl_init(8,&(hashmap->map));
+  (*map) = hashmap;
+} /* hashmap_init */
 
 void
 hashmap_put (hashmap_t hashmap, const ecma_string_t *const literal)
 {
-  LitHashMap_Entry e = { literal->u.hash, literal };
-  LitHashMap_insert (&hashmap->map, &e);
-}
+  hashmap_impl_insert (&hashmap->map, literal);
+} /* hashmap_put */
 
 const ecma_string_t *
 hashmap_get (hashmap_t hashmap, const ecma_string_t *const literal)
 {
-  LitHashMap_Iter it = LitHashMap_find (&hashmap->map, &(literal->u.hash));
-  LitHashMap_Entry *v = LitHashMap_Iter_get (&it);
-  return v ? v->val : NULL;
-}
+  hashmap_impl_iter it = hashmap_impl_find (&hashmap->map, literal->u.hash);
 
-void
-hashmap_remove (hashmap_t hashmap, const ecma_string_t *const literal)
-{
-  LitHashMap_erase (&hashmap->map, &(literal->u.hash));
-}
+  for (const ecma_string_t *p = hashmap_impl_iter_get (&it); p != NULL; p = hashmap_impl_iter_next (&it))
+  {
+    if (ecma_compare_ecma_strings (p, literal))
+    {
+      return p;
+    }
+  }
+  return NULL;
+} /* hashmap_get */
 
 void
 hashmap_destroy (hashmap_t *hashmap)
 {
   if (*hashmap)
   {
-    free (*hashmap);
+    hashmap_impl_destroy (&((*hashmap)->map));
+    jmem_heap_free_block (&((*hashmap)->map),sizeof(struct hashmap_s));
     *hashmap = (hashmap_t) 0;
   }
-}
+} /* hashmap_destroy */
 
-// #if JERRY_LIT_HASHMAP
-// #endif /* JERRY_LIT_HASHMAP */
+#endif /* JERRY_LIT_HASHMAP */
