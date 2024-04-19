@@ -22,11 +22,18 @@
 #include "ecma-globals.h"
 #include "ecma-helpers.h"
 
+/* ------------------------------------------------------------------------------------------------ */
+// Configuration
+
+#define HASHMAP_LINEAR_PROBE_LENGTH ((size_t) 8)
+
+/* ------------------------------------------------------------------------------------------------ */
+
 #define HASHMAP_CAST(type, x)     ((type) (x))
 #define HASHMAP_PTR_CAST(type, x) ((type) (x))
 #define HASHMAP_NULL              0
 
-#define HASHMAP_LINEAR_PROBE_LENGTH ((size_t)8)
+#define HASHMAP_IMPL_INLINE __attribute__ ((always_inline)) inline
 
 /* ------------------------------------------------------------------------------------------------ */
 
@@ -58,14 +65,14 @@ void hashmap_impl_rehash (hashmap_impl *const hashmap);
 
 /* ------------------------------------------------------------------------------------------------ */
 
-inline size_t
+HASHMAP_IMPL_INLINE size_t
 hashmap_impl_log2 (size_t v)
 {
   int n = 31 - __builtin_clz ((uint32_t) v);
   return (size_t) n;
 } /* hashmap_round_log2 */
 
-inline uint32_t
+HASHMAP_IMPL_INLINE uint32_t
 hashmap_impl_lithash_to_index (const hashmap_impl *const m, lit_string_hash_t hash)
 {
   uint32_t v = (hash * 2654435769u) >> (32u - m->log2_capacity);
@@ -74,7 +81,7 @@ hashmap_impl_lithash_to_index (const hashmap_impl *const m, lit_string_hash_t ha
 
 /* ------------------------------------------------------------------------------------------------ */
 
-inline void
+HASHMAP_IMPL_INLINE void
 hashmap_impl_init (size_t initial_capacity, hashmap_impl *hashmap)
 {
   initial_capacity = ((size_t) 1) << hashmap_impl_log2 (initial_capacity);
@@ -88,7 +95,7 @@ hashmap_impl_init (size_t initial_capacity, hashmap_impl *hashmap)
 
 /* ------------------------------------------------------------------------------------------------ */
 
-inline int
+HASHMAP_IMPL_INLINE int
 hashmap_impl_find_empty_slot (const hashmap_impl *const hashmap, const lit_string_hash_t key, uint32_t *const out_index)
 {
   uint32_t start_index = hashmap_impl_lithash_to_index (hashmap, key);
@@ -109,7 +116,7 @@ hashmap_impl_find_empty_slot (const hashmap_impl *const hashmap, const lit_strin
 
 /* ------------------------------------------------------------------------------------------------ */
 
-inline void
+HASHMAP_IMPL_INLINE void
 hashmap_impl_insert (hashmap_impl *hashmap, const ecma_string_t *literal)
 {
   /* Find a place to put our value. */
@@ -126,7 +133,7 @@ hashmap_impl_insert (hashmap_impl *hashmap, const ecma_string_t *literal)
 
 /* ------------------------------------------------------------------------------------------------ */
 
-inline hashmap_impl_iter
+HASHMAP_IMPL_INLINE hashmap_impl_iter
 hashmap_impl_find (hashmap_impl *hashmap, lit_string_hash_t key)
 {
   uint32_t start_index = hashmap_impl_lithash_to_index (hashmap, key);
@@ -138,7 +145,7 @@ hashmap_impl_find (hashmap_impl *hashmap, lit_string_hash_t key)
   };
 } /* hashmap_impl_find */
 
-inline const ecma_string_t *
+HASHMAP_IMPL_INLINE const ecma_string_t *
 hashmap_impl_iter_get (hashmap_impl_iter *iter)
 {
   const ecma_string_t **literals = iter->hmap->literals;
@@ -156,17 +163,17 @@ hashmap_impl_iter_get (hashmap_impl_iter *iter)
   return NULL;
 } /* hashmap_impl_iter_get */
 
-inline const ecma_string_t *
+HASHMAP_IMPL_INLINE const ecma_string_t *
 hashmap_impl_iter_next (hashmap_impl_iter *iter)
 {
   iter->slot++;
   return hashmap_impl_iter_get (iter);
 } /* hashmap_impl_iter_next */
 
-inline void
+HASHMAP_IMPL_INLINE void
 hashmap_impl_destroy (hashmap_impl *hashmap)
 {
-  size_t l = ((size_t)(1 << hashmap->log2_capacity)) + HASHMAP_LINEAR_PROBE_LENGTH;
+  size_t l = ((size_t) (1 << hashmap->log2_capacity)) + HASHMAP_LINEAR_PROBE_LENGTH;
   jmem_heap_free_block (hashmap->literals, l * sizeof (const ecma_string_t *));
 } /* hashmap_impl_destroy */
 
@@ -175,7 +182,7 @@ hashmap_impl_destroy (hashmap_impl *hashmap)
 void
 hashmap_impl_rehash (hashmap_impl *const hashmap)
 {
-  size_t clen = ((size_t)(1 << hashmap->log2_capacity)) + HASHMAP_LINEAR_PROBE_LENGTH;
+  size_t clen = ((size_t) (1 << hashmap->log2_capacity)) + HASHMAP_LINEAR_PROBE_LENGTH;
 
   hashmap_impl new_hashmap;
   hashmap_impl_init (clen * 2, &new_hashmap);
