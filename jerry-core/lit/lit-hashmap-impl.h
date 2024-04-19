@@ -26,7 +26,7 @@
 #define HASHMAP_PTR_CAST(type, x) ((type) (x))
 #define HASHMAP_NULL              0
 
-#define HASHMAP_LINEAR_PROBE_LENGTH 8
+#define HASHMAP_LINEAR_PROBE_LENGTH ((size_t)8)
 
 /* ------------------------------------------------------------------------------------------------ */
 
@@ -175,7 +175,7 @@ hashmap_impl_destroy (hashmap_impl *hashmap)
 void
 hashmap_impl_rehash (hashmap_impl *const hashmap)
 {
-  size_t clen = (1 << hashmap->log2_capacity);
+  size_t clen = (size_t)(1 << hashmap->log2_capacity);
 
   hashmap_impl new_hashmap;
   hashmap_impl_init (clen * 2, &new_hashmap);
