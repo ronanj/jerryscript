@@ -25,8 +25,8 @@
 
 #if JERRY_LIT_HASHMAP
 
-#include "lit-hashmap.h"
 #include "lit-hashmap-impl.h"
+#include "lit-hashmap.h"
 
 struct hashmap_s
 {
@@ -36,8 +36,8 @@ struct hashmap_s
 void
 hashmap_init (hashmap_t *map)
 {
-  struct hashmap_s* hashmap = jmem_heap_alloc_block(sizeof(struct hashmap_s));
-  hashmap_impl_init(8,&(hashmap->map));
+  struct hashmap_s *hashmap = jmem_heap_alloc_block (sizeof (struct hashmap_s));
+  hashmap_impl_init (8, &(hashmap->map));
   (*map) = hashmap;
 } /* hashmap_init */
 
@@ -68,7 +68,7 @@ hashmap_destroy (hashmap_t *hashmap)
   if (*hashmap)
   {
     hashmap_impl_destroy (&((*hashmap)->map));
-    jmem_heap_free_block (&((*hashmap)->map),sizeof(struct hashmap_s));
+    jmem_heap_free_block (&((*hashmap)->map), sizeof (struct hashmap_s));
     *hashmap = (hashmap_t) 0;
   }
 } /* hashmap_destroy */

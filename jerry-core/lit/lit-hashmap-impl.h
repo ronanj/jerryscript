@@ -166,7 +166,7 @@ hashmap_impl_iter_next (hashmap_impl_iter *iter)
 inline void
 hashmap_impl_destroy (hashmap_impl *hashmap)
 {
-  size_t l = HASHMAP_LINEAR_PROBE_LENGTH + (1 << hashmap->log2_capacity);
+  size_t l = (1 << hashmap->log2_capacity) + HASHMAP_LINEAR_PROBE_LENGTH;
   jmem_heap_free_block (hashmap->literals, l * sizeof (const ecma_string_t *));
 } /* hashmap_impl_destroy */
 
@@ -180,7 +180,7 @@ hashmap_impl_rehash (hashmap_impl *const hashmap)
   hashmap_impl new_hashmap;
   hashmap_impl_init (clen * 2, &new_hashmap);
 
-  size_t l = HASHMAP_LINEAR_PROBE_LENGTH + clen;
+  size_t l = clen + HASHMAP_LINEAR_PROBE_LENGTH;
   for (size_t i = 0; i < l; i++)
   {
     const ecma_string_t *p = hashmap->literals[i];
